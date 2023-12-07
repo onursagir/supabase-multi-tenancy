@@ -1,0 +1,30 @@
+services:
+  nginx:
+    image: nginxproxy/nginx-proxy:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+  nextjs:
+    network_mode: host
+    image: node:21
+    working_dir: /app
+    command: >
+      sh -c "npm install && npm run dev"
+    restart: unless-stopped
+    volumes:
+      - ./nextjs:/app
+    environment:
+      - VIRTUAL_HOST=localhost,foo.localhost,bar.localhost
+      - VIRTUAL_PATH=/
+      - VIRTUAL_DEST=/
+      - VIRTUAL_PORT=3000
+  inbucket:
+    image: inbucket/inbucket
+    ports:
+      - "2500:2500"
+      - "9000:9000"
+    environment:
+      - INBUCKET_WEB_ADDR=0.0.0.0:9000
+      - INBUCKET_SMTP_ADDR=0.0.0.0:2500
